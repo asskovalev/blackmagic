@@ -46,12 +46,35 @@ int platform_hwversion(void)
 	return rev;
 }
 
+void maple_init(void){
+	rcc_periph_clock_enable(RCC_GPIOA);
+	rcc_periph_clock_enable(RCC_GPIOB);
+	rcc_periph_clock_enable(RCC_USB);
+	// Turn on LED
+	gpio_set(GPIOB, GPIO1);
+	gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO1);
+
+	// Turn on USB
+	gpio_clear(GPIOB, GPIO9);
+	gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO9);
+	rcc_periph_reset_pulse(RST_USB);
+	rcc_periph_clock_enable(RCC_USB);
+}
+
 void platform_init(void)
 {
 	uint32_t data;
 	SCS_DEMCR |= SCS_DEMCR_VC_MON_EN;
 	rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
-	rev =  detect_rev();
+
+	#ifndef MAPLE_FLAVOR
+		rev =  detect_rev();
+	#else
+		// maple mini is similar to bluepill
+		rev = 1;
+		maple_init();
+	#endif
+
 	/* Enable peripherals */
 	rcc_periph_clock_enable(RCC_AFIO);
 	rcc_periph_clock_enable(RCC_CRC);
@@ -177,6 +200,7 @@ const char *platform_target_voltage(void)
 
 void set_idle_state(int state)
 {
+	#ifndef MAPLE_FLAVOR
 	switch (rev) {
 	case 0:
 		gpio_set_val(GPIOA, GPIO8, state);
@@ -185,6 +209,9 @@ void set_idle_state(int state)
 		gpio_set_val(GPIOC, GPIO13, (!state));
 		break;
 	}
+	#else
+		gpio_set_val(GPIOB, GPIO1, state);
+	#endif
 }
 
 void platform_target_clk_output_enable(bool enable)

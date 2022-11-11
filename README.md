@@ -21,6 +21,10 @@ makes [SWO viewing as simple as connecting to a serial port](https://black-magic
 * [Official website](https://black-magic.org/index.html)
 * [Binary builds](http://builds.blacksphere.co.nz/blackmagic)
 
+## Maple mini
+
+`make PROBE_HOST=swlink`
+
 ## Toolchain specific remarks
 
 Building the firmware is done with the most recent toolchain available from
